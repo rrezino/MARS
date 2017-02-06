@@ -83,7 +83,6 @@ type
     procedure UpdateCookie; virtual;
 
     function ToJSON: TJSONObject; virtual;
-    function ToJSONString: string;
 
     property Token: string read FToken;
     property UserName: string read GetUserName write SetUserName;
@@ -374,18 +373,6 @@ begin
   except
     Result.Free;
     raise;
-  end;
-end;
-
-function TMARSToken.ToJSONString: string;
-var
-  LObj: TJSONObject;
-begin
-  LObj := ToJSON;
-  try
-    Result := LObj.ToJSON;
-  finally
-    LObj.Free;
   end;
 end;
 

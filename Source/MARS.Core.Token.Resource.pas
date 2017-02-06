@@ -27,6 +27,7 @@ uses
   , MARS.Core.Attributes
   , MARS.Core.MediaType
   , MARS.Core.MessageBodyWriter
+  , MARS.Core.Token.ReadersAndWriters
   , MARS.Core.Token
   , MARS.Core.URL
 
@@ -47,16 +48,16 @@ type
     procedure BeforeLogout(); virtual;
     procedure AfterLogout(); virtual;
   public
-    [GET, Produces(TMediaType.APPLICATION_JSON)]
-    function GetCurrent: TJSONObject;
+    [GET, Produces(TMediaType.APPLICATION_JSON), IsReference]
+    function GetCurrent: TMARSToken;
 
-    [POST, Produces(TMediaType.APPLICATION_JSON)]
+    [POST, Produces(TMediaType.APPLICATION_JSON), IsReference]
     function DoLogin(
       [FormParam('username')] const AUsername: string;
-      [FormParam('password')] const APassword: string): TJSONObject;
+      [FormParam('password')] const APassword: string): TMARSToken;
 
-    [DELETE, Produces(TMediaType.APPLICATION_JSON)]
-    function Logout: TJSONObject;
+    [DELETE, Produces(TMediaType.APPLICATION_JSON), IsReference]
+    function Logout: TMARSToken;
   end;
 
 
@@ -103,7 +104,7 @@ begin
 
 end;
 
-function TMARSTokenResource.DoLogin(const AUsername, APassword: string): TJSONObject;
+function TMARSTokenResource.DoLogin(const AUsername, APassword: string): TMARSToken;
 begin
   BeforeLogin(AUserName, APassword);
   try
@@ -114,30 +115,29 @@ begin
           TMARSToken.JWT_SECRET_PARAM
         , TMARSToken.JWT_SECRET_PARAM_DEFAULT).AsString
       );
-      Result := Token.ToJSON;
-      Result.AddPair('success', TJSONTrue.Create);
+      Result := Token;
     end
     else
     begin
       Token.Clear;
-      Result := TJSONObject.Create(TJSONPair.Create('success', TJSONFalse.Create));
+      Result := Token;
     end;
   finally
     AfterLogin(AUserName, APassword);
   end;
 end;
 
-function TMARSTokenResource.GetCurrent: TJSONObject;
+function TMARSTokenResource.GetCurrent: TMARSToken;
 begin
-  Result := Token.ToJSON;
+  Result := Token;
 end;
 
-function TMARSTokenResource.Logout: TJSONObject;
+function TMARSTokenResource.Logout: TMARSToken;
 begin
   BeforeLogout();
   try
     Token.Clear;
-    Result := Token.ToJSON;
+    Result := Token;
   finally
     AfterLogout();
   end;
